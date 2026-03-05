@@ -91,5 +91,11 @@ def validate_visualization_plan(payload: Any, valid_columns: set[str]) -> list[d
         if y_col is not None and y_col not in valid_columns:
             continue
 
+        # Type-specific field requirements to avoid runtime chart failures.
+        if chart_type in {"scatter", "bar", "line"} and (x_col is None or y_col is None):
+            continue
+        if chart_type in {"histogram", "box"} and x_col is None:
+            continue
+
         clean.append({"type": chart_type, "x": x_col, "y": y_col})
     return clean
