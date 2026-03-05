@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Dataset Copilot: {{ dataset.name }}</h3>
+<p class="text-muted">Ask questions in natural language. Copilot responds with insights and suggested charts.</p>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="post" class="row g-2">
+      {% csrf_token %}
+      <div class="col-md-10">
+        <input type="text" name="question" class="form-control" placeholder="Example: What are the strongest predictors and what charts should I inspect?" required />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Ask</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% for item in rendered_messages %}
+<div class="card mb-3 {% if item.obj.role == 'assistant' %}border-primary{% endif %}">
+  <div class="card-body">
+    <div class="d-flex justify-content-between">
+      <strong>{% if item.obj.role == 'user' %}You{% else %}AEDA Copilot{% endif %}</strong>
+      <small class="text-muted">{{ item.obj.created_at }}</small>
+    </div>
+    <p class="mt-2 mb-2">{{ item.obj.content }}</p>
+
+    {% if item.chart_html_items %}
+      {% for chart in item.chart_html_items %}
+      <div class="mt-2">
+        <h6 class="mb-1">{{ chart.title }}</h6>
+        <div class="plot-wrap">{{ chart.html|safe }}</div>
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<p class="text-muted">No conversation yet. Ask your first dataset question.</p>
+{% endfor %}
+{% endblock %}

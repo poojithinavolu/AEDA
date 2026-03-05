@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Register</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-success w-100" type="submit">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Create Project</h5>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <h5>Accessible Projects</h5>
+    <div class="row g-3">
+      {% for project in projects %}
+      <div class="col-md-6">
+        <a href="{% url 'project_detail' project.id %}" class="project-folder text-decoration-none">
+          <div class="folder-top"></div>
+          <div class="folder-body">
+            <h6 class="mb-1 text-dark">{{ project.name }}</h6>
+            <p class="mb-1 text-muted small">{{ project.description|default:'No description'|truncatechars:70 }}</p>
+            <small class="text-secondary">{{ project.datasets.count }} dataset(s)</small><br/>
+            <small class="text-dark">Owner: {{ project.owner.username }}</small>
+          </div>
+        </a>
+      </div>
+      {% empty %}
+      <p>No projects created yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

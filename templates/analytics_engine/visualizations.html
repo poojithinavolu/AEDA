@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Visualizations: {{ dataset.name }}</h3>
+{% for viz in visualizations %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>{{ viz.title }}</h5>
+    <p class="text-muted">Type: {{ viz.chart_type }}</p>
+    <div class="plot-wrap">{{ viz.html_snippet|safe }}</div>
+  </div>
+</div>
+{% empty %}
+<p>No visualizations generated yet.</p>
+{% endfor %}
+{% endblock %}

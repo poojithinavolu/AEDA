@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-9">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4>Model Training</h4>
+        <div class="mb-2">
+          <a class="btn btn-sm btn-outline-dark" href="{% url 'model_leaderboard' %}">Open Leaderboard</a>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Dataset</label>{{ form.dataset }}</div>
+            <div class="col-md-4"><label class="form-label">Model</label>{{ form.model_type }}</div>
+            <div class="col-md-4"><label class="form-label">Target Column</label>{{ form.target_column }}</div>
+            <div class="col-md-3"><label class="form-label">Test Size</label>{{ form.test_size }}</div>
+            <div class="col-md-3"><label class="form-label">Random State</label>{{ form.random_state }}</div>
+            <div class="col-md-3"><label class="form-label">CV Folds</label>{{ form.cv_folds }}</div>
+            <div class="col-md-3"><label class="form-label">Max Iterations</label>{{ form.max_iter }}</div>
+            <div class="col-md-4"><label class="form-label">RF Trees (n_estimators)</label>{{ form.n_estimators }}</div>
+            <div class="col-md-4"><label class="form-label">SVM C</label>{{ form.svm_c }}</div>
+            <div class="col-md-4"><label class="form-label">SVM Kernel</label>{{ form.svm_kernel }}</div>
+            <div class="col-md-4">
+              <label class="form-label d-block">Auto Tune Hyperparameters</label>
+              <div class="form-check form-switch">
+                {{ form.auto_tune }}
+                <label class="form-check-label" for="{{ form.auto_tune.id_for_label }}">Enable auto-tuning</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-text mt-2">
+            Defaults are prefilled. You can override values manually. Some fields are model-specific.
+          </div>
+          <button class="btn btn-success" type="submit">Train Model</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Accessible Datasets</h3>
+<table class="table table-striped">
+  <thead><tr><th>Name</th><th>Version</th><th>Project</th><th>Owner</th><th>Rows</th><th>Columns</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for d in datasets %}
+    <tr>
+      <td>{{ d.name }}</td>
+      <td>v{{ d.version }}</td>
+      <td>{{ d.project.name }}</td>
+      <td>{{ d.owner.username }}</td>
+      <td>{{ d.row_count }}</td>
+      <td>{{ d.column_count }}</td>
+      <td>
+        <a href="{% url 'dataset_overview' d.id %}" class="btn btn-sm btn-outline-secondary">Overview</a>
+        <a href="{% url 'auto_insights' d.id %}" class="btn btn-sm btn-outline-primary">Insights</a>
+        <a href="{% url 'dataset_copilot' d.id %}" class="btn btn-sm btn-outline-dark">Copilot</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7">No datasets available.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

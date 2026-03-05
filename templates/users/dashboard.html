@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card kpi-card"><div class="card-body"><h6>Projects</h6><p class="display-6">{{ projects_count }}</p></div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card kpi-card"><div class="card-body"><h6>Datasets</h6><p class="display-6">{{ datasets_count }}</p></div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card kpi-card"><div class="card-body"><h6>Analysis Runs</h6><p class="display-6">{{ analysis_count }}</p></div></div>
+  </div>
+</div>
+{% endblock %}

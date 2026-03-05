@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">{{ project.name }}</h3>
+    <p class="text-muted mb-0">{{ project.description|default:'No description' }}</p>
+    <small class="text-secondary">Role: {{ user_role|default:'N/A' }}</small>
+  </div>
+  {% if can_edit %}
+  <a class="btn btn-success" href="{% url 'dataset_upload' %}?project={{ project.id }}">Upload Dataset To This Project</a>
+  {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6"><div class="card"><div class="card-body"><strong>Datasets:</strong> {{ dataset_count }}</div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><strong>Analysis Runs:</strong> {{ analysis_count }}</div></div></div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="mb-3">Datasets In This Project</h5>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Dataset</th>
+            <th>Version</th>
+            <th>Rows</th>
+            <th>Columns</th>
+            <th>Latest Analysis</th>
+            <th>Total Runs</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in dataset_rows %}
+          <tr>
+            <td>{{ row.dataset.name }}</td>
+            <td>v{{ row.dataset.version }}</td>
+            <td>{{ row.dataset.row_count }}</td>
+            <td>{{ row.dataset.column_count }}</td>
+            <td>
+              {% if row.latest_run %}
+                <span class="badge {% if row.latest_run.status == 'completed' %}text-bg-success{% elif row.latest_run.status == 'failed' %}text-bg-danger{% else %}text-bg-warning{% endif %}">
+                  {{ row.latest_run.status }}
+                </span>
+              {% else %}
+                <span class="text-muted">No run yet</span>
+              {% endif %}
+            </td>
+            <td>{{ row.analysis_runs_count }}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'dataset_overview' row.dataset.id %}">Overview</a>
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'auto_insights' row.dataset.id %}">Insights</a>
+              <a class="btn btn-sm btn-outline-dark" href="{% url 'visualizations' row.dataset.id %}">Visuals</a>
+              <a class="btn btn-sm btn-outline-success" href="{% url 'dataset_copilot' row.dataset.id %}">Copilot</a>
+              {% if can_edit %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_dataset" />
+                <input type="hidden" name="dataset_id" value="{{ row.dataset.id }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete dataset" onclick="return confirm('Delete this dataset and all related runs/visualizations/models?');">
+                  <span aria-hidden="true">&#128465;</span>
+                  <span class="visually-hidden">Delete</span>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7">No datasets in this project yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-3">Project Members</h5>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered align-middle">
+        <thead><tr><th>User</th><th>Role</th><th>Invited By</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>{{ project.owner.username }}</td>
+            <td><span class="badge text-bg-primary">owner</span></td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          {% for m in members %}
+            {% if m.user_id != project.owner_id %}
+            <tr>
+              <td>{{ m.user.username }}</td>
+              <td><span class="badge text-bg-secondary">{{ m.role }}</span></td>
+              <td>{% if m.invited_by %}{{ m.invited_by.username }}{% else %}-{% endif %}</td>
+              <td>
+                {% if can_manage_members %}
+                <form method="post" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="remove_member" />
+                  <input type="hidden" name="membership_id" value="{{ m.id }}" />
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                </form>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if can_manage_members %}
+    <h6>Add / Update Member</h6>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="invite_member" />
+      <div class="col-md-5">
+        <label class="form-label">Username</label>
+        {{ invite_form.username }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Role</label>
+        {{ invite_form.role }}
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" type="submit">Save Member</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

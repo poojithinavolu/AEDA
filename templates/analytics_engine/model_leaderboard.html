@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Model Leaderboard</h3>
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-md-4">
+    <label class="form-label">Rank by Metric</label>
+    <select class="form-select" name="metric">
+      {% for metric in allowed_metrics %}
+      <option value="{{ metric }}" {% if metric == selected_metric %}selected{% endif %}>{{ metric }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Apply</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-sm table-striped table-bordered align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Dataset</th>
+        <th>Version</th>
+        <th>Hash</th>
+        <th>Model</th>
+        <th>Target</th>
+        <th>Score ({{ selected_metric }})</th>
+        <th>Test</th>
+        <th>CV Mean</th>
+        <th>AUC</th>
+        <th>F1</th>
+        <th>Run</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ row.run.dataset.name }}</td>
+        <td>v{{ row.dataset_version }}</td>
+        <td>{{ row.dataset_hash }}</td>
+        <td>{{ row.run.get_model_type_display }}</td>
+        <td>{{ row.run.target_column }}</td>
+        <td>{% if row.score != None %}{{ row.score|floatformat:6 }}{% else %}-{% endif %}</td>
+        <td>{% if row.test_score != None %}{{ row.test_score|floatformat:6 }}{% else %}-{% endif %}</td>
+        <td>{% if row.cv_mean != None %}{{ row.cv_mean|floatformat:6 }}{% else %}-{% endif %}</td>
+        <td>{% if row.auc != None %}{{ row.auc|floatformat:6 }}{% else %}-{% endif %}</td>
+        <td>{% if row.f1_score != None %}{{ row.f1_score|floatformat:6 }}{% else %}-{% endif %}</td>
+        <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'model_results' row.run.id %}">Open</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="12">No model runs available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

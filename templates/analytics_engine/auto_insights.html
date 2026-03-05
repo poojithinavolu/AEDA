@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Auto Insights: {{ dataset.name }}</h3>
+<form method="post" class="mb-3">
+  {% csrf_token %}
+  <button class="btn btn-primary" type="submit">Re-run Analysis</button>
+</form>
+
+{% if run %}
+<div class="card mb-3"><div class="card-body">
+  <h5>Status: {{ run.status }}</h5>
+  {% if run.error_message %}<p class="text-danger">{{ run.error_message }}</p>{% endif %}
+</div></div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6>LLM Feature Plan</h6>
+      {% if feature_plan_items %}
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0">
+          <thead><tr><th>Column</th><th>Recommended Actions</th></tr></thead>
+          <tbody>
+            {% for col, actions in feature_plan_items %}
+            <tr>
+              <td>{{ col }}</td>
+              <td>{{ actions|join:", " }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No feature actions were selected for this run.</p>
+      {% endif %}
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6>Applied Transformations</h6>
+      {% if applied_items %}
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0">
+          <thead><tr><th>Column</th><th>Applied Actions</th></tr></thead>
+          <tbody>
+            {% for col, actions in applied_items %}
+            <tr>
+              <td>{{ col }}</td>
+              <td>{{ actions|join:", " }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No transformations were executed in this run.</p>
+      {% endif %}
+    </div></div>
+  </div>
+</div>
+
+<a class="btn btn-outline-primary mt-3" href="{% url 'visualizations' dataset.id %}">Open Visualizations</a>
+{% endif %}
+{% endblock %}

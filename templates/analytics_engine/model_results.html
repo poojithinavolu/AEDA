@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Model Results</h3>
+<div class="mb-3">
+  <a class="btn btn-outline-success" href="{% url 'model_predict' %}?dataset={{ model_run.dataset_id }}&run={{ model_run.id }}">Test New Input With This Model</a>
+  <a class="btn btn-outline-dark" href="{% url 'model_leaderboard' %}">Open Model Leaderboard</a>
+</div>
+<div class="card mb-3">
+  <div class="card-body">
+    <p><strong>Dataset:</strong> {{ model_run.dataset.name }}</p>
+    <p><strong>Model:</strong> {{ model_run.get_model_type_display }}</p>
+    <p><strong>Target:</strong> {{ model_run.target_column }}</p>
+    <p><strong>Task:</strong> {{ task_type|title }}</p>
+
+    <h6>Training Configuration</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered">
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          {% for k, v in training_config_items %}
+          <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+          {% empty %}
+          <tr><td colspan="2">No training config recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Metrics</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-striped table-bordered">
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          {% for k, v in headline_metrics %}
+          <tr><td>{{ k }}</td><td>{{ v|floatformat:6 }}</td></tr>
+          {% empty %}
+          <tr><td colspan="2">No metrics available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Prediction Preview (Actual vs Predicted)</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered">
+        <thead><tr><th>Actual</th><th>Predicted</th></tr></thead>
+        <tbody>
+          {% for p in prediction_preview %}
+          <tr><td>{{ p.actual }}</td><td>{{ p.predicted }}</td></tr>
+          {% empty %}
+          <tr><td colspan="2">No preview available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Confusion Matrix</h6>
+    {% if confusion_matrix_html %}
+      <div class="plot-wrap">{{ confusion_matrix_html|safe }}</div>
+    {% else %}
+      <p class="text-muted">N/A for regression models.</p>
+    {% endif %}
+
+    <h6>ROC Curve</h6>
+    {% if roc_curve_html %}
+      <div class="plot-wrap">{{ roc_curve_html|safe }}</div>
+    {% else %}
+      <p class="text-muted">N/A unless binary classification with probability scores.</p>
+    {% endif %}
+
+    {% if notes %}
+    <h6>Notes</h6>
+    <ul>
+      {% for n in notes %}
+      <li>{{ n }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h6>Explainability</h6>
+    {% if explainability %}
+      <p><strong>Method:</strong> {{ explainability.method }}</p>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>Feature</th><th>Importance</th></tr></thead>
+          <tbody>
+            {% for item in explainability.global_importance %}
+            <tr><td>{{ item.feature }}</td><td>{{ item.importance|floatformat:6 }}</td></tr>
+            {% empty %}
+            <tr><td colspan="2">No global importance available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h6>Per-row Explanation (Example)</h6>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>Feature</th><th>Contribution</th><th>Direction</th></tr></thead>
+          <tbody>
+            {% for item in explainability.local_example %}
+            <tr><td>{{ item.feature }}</td><td>{{ item.contribution|floatformat:6 }}</td><td>{{ item.direction }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3">No local explanation available for this run.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">Explainability not available for this model run.</p>
+    {% endif %}
+  </div>
+</div>
+
+<h5>Recent Model Runs</h5>
+<table class="table table-sm">
+  <thead><tr><th>ID</th><th>Dataset</th><th>Model</th><th>Created</th></tr></thead>
+  <tbody>
+    {% for run in history %}
+    <tr>
+      <td>{{ run.id }}</td><td>{{ run.dataset.name }}</td><td>{{ run.get_model_type_display }}</td><td>{{ run.created_at }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

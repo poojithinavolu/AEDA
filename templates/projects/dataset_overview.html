@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load project_extras %}
+{% block content %}
+<h3>{{ dataset.name }}</h3>
+<p class="text-muted">Project: {{ dataset.project.name }}</p>
+<p class="text-muted">Version: v{{ dataset.version }} | Role: {{ user_role|default:"N/A" }}</p>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card"><div class="card-body"><strong>Rows:</strong> {{ dataset.row_count }}</div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><strong>Columns:</strong> {{ dataset.column_count }}</div></div></div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+  <a class="btn btn-primary" href="{% url 'auto_insights' dataset.id %}">Auto Insights</a>
+  <a class="btn btn-outline-primary" href="{% url 'visualizations' dataset.id %}">Visualizations</a>
+  <a class="btn btn-outline-dark" href="{% url 'dataset_copilot' dataset.id %}">Dataset Copilot</a>
+  <a class="btn btn-outline-success" href="{% url 'dataset_report_pdf' dataset.id %}">Download PDF Report</a>
+</div>
+
+{% if quality_scorecard %}
+<div class="mt-4 card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-3">Data Quality Scorecard</h5>
+    <div class="row g-3">
+      <div class="col-md-3"><div class="card"><div class="card-body"><strong>Overall</strong><br/>{{ quality_scorecard.overall_score }}</div></div></div>
+      <div class="col-md-3"><div class="card"><div class="card-body"><strong>Completeness</strong><br/>{{ quality_scorecard.completeness_pct }}%</div></div></div>
+      <div class="col-md-3"><div class="card"><div class="card-body"><strong>Duplicates</strong><br/>{{ quality_scorecard.duplicate_row_pct }}%</div></div></div>
+      <div class="col-md-3"><div class="card"><div class="card-body"><strong>Outlier Ratio</strong><br/>{{ quality_scorecard.numeric_outlier_pct }}%</div></div></div>
+    </div>
+    {% if quality_scorecard.high_cardinality_columns %}
+    <div class="mt-3">
+      <strong>High Cardinality Columns:</strong> {{ quality_scorecard.high_cardinality_columns|join:", " }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% if latest_run %}
+<div class="mt-4 card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-3">Latest Analysis Run</h5>
+    <p class="mb-3">Status: <strong>{{ latest_run.status }}</strong></p>
+
+    <h6>Columns and Data Types</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered align-middle">
+        <thead><tr><th>Column</th><th>Data Type</th></tr></thead>
+        <tbody>
+          {% for col, dtype in dtypes_items %}
+          <tr><td>{{ col }}</td><td>{{ dtype }}</td></tr>
+          {% empty %}
+          <tr><td colspan="2">No dtype info available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Missing Values</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-bordered align-middle">
+        <thead><tr><th>Column</th><th>Missing Count</th></tr></thead>
+        <tbody>
+          {% for col, cnt in missing_items %}
+          <tr><td>{{ col }}</td><td>{{ cnt }}</td></tr>
+          {% empty %}
+          <tr><td colspan="2">No missing-value info available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Summary Statistics</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm table-striped table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Column</th><th>Count</th><th>Mean</th><th>Std</th><th>Min</th><th>25%</th><th>Median</th><th>75%</th><th>Max</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in summary_rows %}
+          <tr>
+            <td>{{ row.column }}</td>
+            <td>{{ row.count|floatformat:2 }}</td>
+            <td>{{ row.mean|floatformat:2 }}</td>
+            <td>{{ row.std|floatformat:2 }}</td>
+            <td>{{ row.min|floatformat:2 }}</td>
+            <td>{{ row.p25|floatformat:2 }}</td>
+            <td>{{ row.median|floatformat:2 }}</td>
+            <td>{{ row.p75|floatformat:2 }}</td>
+            <td>{{ row.max|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9">No summary statistics available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h6>Sample Rows</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover table-bordered align-middle">
+        <thead>
+          <tr>
+            {% for col in sample_columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in sample_rows %}
+          <tr>
+            {% for col in sample_columns %}
+            <td>{{ row|get_item:col }}</td>
+            {% endfor %}
+          </tr>
+          {% empty %}
+          <tr><td colspan="{{ sample_columns|length|default:1 }}">No sample rows available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
